@@ -1,0 +1,230 @@
+<h1>Все файлы</h1>
+<span class="hint">Список всех файлов, загруженных в систему</span>
+<form id="stf_file_upload_form" action="?plugin=stfile&module=files&action=upload" method="POST" enctype="multipart/form-data">
+	<div class="l-dropbox">
+		<a class="l-fileinput-button">
+			<i class="icon16 upload"></i> Выберите изображения
+			<input type="file" name="files[]" multiple="">
+		</a>
+		<span class="gray">или просто перетащите их сюда, чтобы начать загрузку</span>
+	</div>
+	{$wa->csrf()}
+	<div class="dialog width500px height400px" id="l_upload_notification">
+		<div class="dialog-background"></div>
+		<div class="dialog-window">
+			<div class="l-upload-list"></div>
+			<div class="dialog-buttons">
+				<div class="block float-right" style="padding-top: 22px;">
+					<a href="#" class="l-cancel hint cancel">Отмена</a>
+				</div>
+				<div style="display:none; padding-top: 25px;" class="l-upload-errors block errormsg">
+					Некоторые файлы загружены с ошибками
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+
+<div class="stf-filters mt15">
+	<h3>Фильтры</h3>
+	<form class="stf-filters-file">
+		<div class="field">
+			<select name="filters[ext][]" multiple="multiple" class="stf-file-filters-ext" style="width: 100%;">
+				{foreach $filters.exts as $key => $ext}
+					<option value="{$key|escape}">{mb_strtoupper($ext.ext)|escape}</option>
+				{/foreach}
+			</select>
+		</div>
+	</form>
+</div>
+
+<div class="stf-mass-actions-wrap mt15">
+	<div class="stf-mass-action stf-mass-action-files mass-actions-wrap inl inactive" data-count-url="?plugin=stfile&module=files&action=selectionCount">
+		<div class="mass-actions-cpt">Файлы (<span class="mass-actions-total">0</span>) <i class="icon16 darr"></i></div>
+		<ul class="mass-actions">
+			<li data-action="setAddDialog"><a href="#">Добавить в список</a></li>
+			<li data-action="setRemoveDialog"><a href="#">Исключить из списка</a></li>
+			<li data-action="removeFilesDialog"><a href="#">Удалить</a></li>
+		</ul>
+	</div>
+</div>
+
+<div class="stf-dt-wrap">
+	
+	<table class="stf-files-table zebra mt5" data-Url="?plugin=stfile&module=files&action=list">
+		<thead>
+			<tr>
+				<th width="33"><input type="checkbox" class="stf-files-check"></th>
+				<th>Имя файла</th>
+				<th width="1"></th>
+				<th width="1"></th>
+				<th width="1"></th>
+			</tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+</div>
+{literal}
+<script type="text/javascript">
+    (function($) {
+        $.stfileFiles = {
+            uploadForm: null,
+
+			filesTable: null,
+			filesTableContainer: null,
+			filesTableUrl: null,
+			filterForm: null,
+			filterExt: null,
+
+			check: null,
+			checkItem: null,
+			selectionCount: null,
+			selectionCountUrl: null,
+            init: function() {
+                this.uploadForm = $('#stf_file_upload_form');
+				this.filesTableContainer = $('.stf-files-table');
+				this.filtersForm = $('.stf-filters-file');
+				this.filterExt = $('.stf-file-filters-ext');
+				this.check = $('.stf-files-check');
+				this.checkItem = '.stf-file-item';
+				this.selectionCount = $('.stf-mass-action-files');
+				this.iconFileDownloadClass = '.stf-file-download';
+				this.iconFileEditClass = '.stf-file-edit';
+				this.iconFileDeleteClass = '.stf-file-delete';
+				this.selectionCountUrl = this.selectionCount.attr('data-count-url');
+				this.filesTableUrl = this.filesTableContainer.attr('data-Url');
+                $.stfileControl.setActiveBlock("#/files//");
+                this.initFilesForm();
+				this.initFilters();
+				this.initFilesTable();
+            },
+            initFilesForm: function() {
+                var self = this;
+                this.uploadForm.goFileUpload(function(jData) {
+					self.filesTable.fnReloadAjax();
+				});
+            },
+			initFilesTable: function() {
+				var self = this;
+                this.filesTable = this.filesTableContainer.dataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [[25, 50, 100], [25, 50, 100]],
+                    "ajax": self.filesTableUrl+'&'+self.filtersForm.serialize(),
+                    "order": [[ 1, "asc" ]],
+                    columnDefs: [{orderable: false, targets: [0]}],
+                    "language":{
+                        "sLengthMenu": "Показывать _MENU_ записей",
+                        "sZeroRecords": "Нет записей, удовлетворяющих условиям поиска",
+                        "sInfo": "Отображаются записи с _START_ до _END_ из _TOTAL_",
+                        "sInfoEmpty": "Отображаются записи с 0 до 0 из 0",
+                        "sInfoFiltered": "(отфильтровано из _MAX_ записей)",
+                        "sSearch": "Поиск:",
+                        "processing": "Обработка...",
+                        "oPaginate": { "sNext": ">>", "sPrevious": "<<" }
+                    }
+                });
+
+				this.filesTable.on('search.dt', function () {
+					self.disableSelection();
+				});
+
+				this.filesTable.on('draw.dt', function () {
+					if(self.check.prop('checked')) {
+						self.filesTableContainer.find(self.checkItem).prop('checked', true);
+					}
+
+					var deleteIcon = $(self.iconFileDeleteClass);
+					deleteIcon.on('click', function() {
+						$.stfileControl.deployPopup('?plugin=stfile&module=files&action=removeDialog', { file_id: $(this).attr('data-id') });
+					});
+
+					var editIcon = $(self.iconFileEditClass);
+					editIcon.on('click', function() {
+						$.stfileControl.deployPopup('?plugin=stfile&module=files&action=editDialog', { file_id: $(this).attr('data-id') });
+					});
+
+					self.selection();
+				});
+
+				this.check.change(function() {
+					if($(this).prop('checked')) {
+						self.filesTableContainer.find(self.checkItem).prop('checked', true);
+					}
+					if(!$(this).prop('checked')) {
+						self.filesTableContainer.find(self.checkItem).prop('checked', false);
+					}
+					self.selection();
+				});
+
+				$('body').off('change', this.checkItem);
+				$('body').on('change', this.checkItem, function() {
+					self.check.prop('checked', false);
+					self.selection();
+				});
+
+				this.selectionCount.find('li a').click(function() {
+					var p = $(this).parent();
+					$.stfileControl.deployPopup('?plugin=stfile&module=files&action='+encodeURIComponent(p.attr('data-action')), self.selectionQueryString());
+					return false;
+				});
+					
+			},
+			initFilters: function() {
+				var self = this;
+				this.filterExt.select2({
+					language: "ru",
+					placeholder: "Все типы файлов"
+				}).on('change', function(e) {
+					self.filesTable.api().ajax.Url(self.filesTableUrl+'&'+self.filtersForm.serialize()).load();
+					self.disableSelection();
+				});
+			},
+			selection: function() {
+				var self = this;
+				var q = this.selectionQueryString();
+				$.post(this.selectionCountUrl, q, function(j) {
+					var s = parseInt(j.data.count);
+					if(s > 0) { self.selectionCount.removeClass('inactive'); }
+					else { self.selectionCount.addClass('inactive'); }
+					self.selectionCount.find('.mass-actions-total').text(s);
+				}, 'json');
+			},
+			selectionQueryString: function() {
+				var query = null;
+				if(!this.check.prop('checked')) {
+					var i = new Array();
+					this.filesTableContainer.find(this.checkItem).each(function() {
+						if($(this).prop('checked')) {
+							i.push($(this).attr('data-id'));
+						}
+					});
+					tmp = new Array();
+					$.each(i, function(index, value) {
+						tmp.push('filters[items][]='+encodeURIComponent(value));
+					});
+					if(i.length) {
+						query = tmp.join('&');
+					}
+					query = query+'&filters[all]=0';
+				}
+				else {
+					query = this.filtersForm.serialize();
+					if(query.length) {
+						query = query + '&';
+					}
+					query = query + '&filters[search]='+encodeURIComponent(this.filesTableContainer.closest('.stf-dt-wrap').find('.dataTables_filter').find('input[type="search"]').val())+'&filters[all]=1'
+				}
+				return query;
+			},
+			disableSelection: function() {
+				this.check.prop('checked', false);
+			}
+    	}
+    })(jQuery);
+    $(document).ready(function() {
+        $.stfileFiles.init();
+    })
+
+</script>
+{/literal}

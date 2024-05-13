@@ -1,0 +1,177 @@
+{if isset($file)}
+<div class="stf-popup-cpt">
+	<i class="icon16 close b-close"></i>
+	<h3 class="title">Изменение файла: {$file.name|escape}.{$file.ext|escape}</h3>
+    <ul class="menu-h mt15 stf-edit-menu" >
+        <li class="selected" data-block="rename"><a>Изменеить имя</a></li>
+        <li data-block="delete"><a>Удалить файл из списка</a></li>
+    </ul>
+</div>
+
+<div class="stf-popup-cnt" style="padding: 0px 10px;">
+    <div class="stf-edit-block"  data-block="rename">
+        <form class="stf-files-edit-form"  data-path="{$path|escape}"  action="?plugin=stfile&module=files&action=edit">
+            <input type="text" name="file[id]" value="{$file['id']|escape}" style="display: none;">
+            <input type="text" name="file[ext]" value="{$file['ext']|escape}" style="display: none;">
+    
+            <div class="field">
+                <div class="name">Новое имя</div>
+                <div class="value">
+                    <input type="text" name="file[name]" value="{$file['name']|escape}"/>
+                </div>
+            </div>
+    
+            <div>
+                <input type="submit" class="button green" value="Изменить">
+                <span class="form-message mt15" style="display: block;"></span>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="stf-popup-cnt" style="padding-top: 0px;">
+    <div class="stf-edit-block" style="display: none;" data-block="delete">
+        <form class="stf-files-remove-form" 
+            data-setId='{$set_id|escape}' 
+            data-fileId="{$file['id']|escape}" 
+            data-productId="{$prodict_id|escape}"
+            action="?plugin=stfile&module=set&action=removeFile">
+            <input type="text" name="file[name]" value="{$file['name']|escape}" style="display: none;">
+            <span class="hint">При удалинии файла, файл удалиться только из этого списка.</span>
+            <div class="name mt15">Введите его название (без расширения) для его удлания.</div>
+            
+            <div class="value mt15">
+                <input type="text" name="nameInput" value="{$file['name']|escape}"/>
+            </div>
+           
+            <div>
+                <input type="submit" class="button red mt15" value="Удалить">
+                <span class="form-message mt15" style="display: block;"></span>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+
+{else}
+<div class="stf-popup-cpt">
+    <i class="icon16 close b-close"></i>
+    <h2 class="title">Ошибка сервера</h2>
+</div>
+{/if}
+{literal}
+<script type="text/javascript">
+(function ($) {
+	$.stfileFilesEditDialog = {
+        form: null,
+        formRemove: null,
+        menu: null,
+        block: null,
+        set_id: null,
+        file_id: null,
+        product_id: null,
+        path:null,
+        
+		init: function() {
+            this.form = $('.stf-files-edit-form');
+            this.formRemove = $('.stf-files-remove-form');
+            this.set_id = this.formRemove.attr('data-setId');
+            this.file_id = this.formRemove.attr('data-fileId');
+            this.product_id = this.formRemove.attr('data-productId');
+            this.path = this.form.attr('data-path');
+
+            this.menu = $('.stf-edit-menu');
+            this.block = $('.stf-edit-block');
+
+            
+
+            this.initForm();
+            this.initMenu();
+		},
+        initMenu: function() {
+            this.menu.on('click', (e) => {
+                if($(e.target.parentNode).hasClass('selected')) {
+                    return;
+                }
+                else {
+                    this.menu.children().each(function(item){
+                        $(this).removeClass('selected');
+                    });
+                    $(e.target.parentNode).addClass('selected');
+
+                    this.block.each(function(item){
+                        $(this).hide();
+                    });
+
+                    this.block.each(function(item){
+                        if($(this).attr('data-block') == $(e.target.parentNode).attr('data-block')){
+                            $(this).show();
+                        }
+                    });
+                }
+                
+            })
+        },
+		initForm: function() {
+			var self = this;
+			this.form.submit(function() {
+				var t = $(this);
+				var m = t.find('.form-message');
+                var filename = $("input[name='file[name]']").prop('value');
+                m.hide();
+
+                if(!$.stfileHelper.isValidFilename(filename))
+                {
+					m.css('color', 'red');
+                    m.text("Название файла не должно быть с расширением и" + 
+                           "содержить специальных символов: (\ / : * ? \" < > . |)").show();
+                    return false;
+                }
+				self.eventPostForm(t.attr('action'), t.serialize());
+				return false;
+			});
+
+            this.formRemove.submit(function() {
+				var t = $(this);
+				var m = t.find('.form-message');
+                var filename = $("input[name='file[name]']").prop('value');
+                var filenameInput = $("input[name='nameInput']").prop('value');
+               
+				m.hide();
+                if(filename != filenameInput){
+                    m.css('color', 'red');
+                    m.text("Имя файла введено не правильно").show();
+                    return false;
+                }
+                self.eventPostForm(t.attr('action'), {set_id: self.set_id, file_id: self.file_id});
+				return false;
+			});
+		},
+        eventPostForm: function(url, data) {
+            var self = this;
+            $.post(url, data, function(jData) {
+					if(jData.data[0].result == '1'){
+                        if(self.product_id > 0){
+                            $.stfileSetProduct.filesTable.fnReloadAjax();
+                            $.stfileSetProduct.hidePopup();
+                        } else {
+                            $.stfileSetEdit.filesTableSet.fnReloadAjax();
+                            $.stfileControl.hidePopup();
+                        }
+                    } else {
+                        
+                        m.text(jData.data.message).show();
+                    }
+
+				}, 'json');
+			
+        },
+	}
+})(jQuery);
+$(document).ready(function() {
+    $.stfileFilesEditDialog.init();
+});
+</script>
+{/literal}
+
+

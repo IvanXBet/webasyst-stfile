@@ -1,0 +1,69 @@
+#maincontent {margin-top: 44px; padding: 0;}
+.content {}
+.s-level2 {display: none;}
+.mb0 {margin-bottom: 0;}
+.mt15 {margin-top: 15px !important;}
+
+/* FILE UPLOAD */
+.l-dropbox {border: 2px dashed #ddd; margin-bottom: 30px; margin-top: 10px; padding: 30px; text-align: center;}
+.l-fileinput-button {position: relative; overflow: hidden; margin-right: 4px;}
+.l-fileinput-button input {position: absolute; top: 0; right: 0; margin: 0; border: solid transparent; opacity: 0; filter: alpha(opacity=0); -moz-transform: translate(-300px, 0) scale(4); cursor: pointer;}
+.l-upload-list {padding: 20px;}
+.l-upload-status {position: relative; margin-bottom: 10px;}
+.l-upload-bar {position: absolute; top: 0; left: 0; bottom: 0; padding: 0; background: #def; border-right: 2px solid #7ac;}
+.l-progress-error .l-upload-bar {background: #e88; border-right: 2px solid #f00;}
+.l-image-list {margin-right: -200px !important;}
+.l-upload-name {position: relative; padding: 5px;}
+.l-upload-progress {position: relative; float: right; padding: 5px;}
+.l-image-controls {text-align: center; max-width: 204px;}
+.l-image-control {color: #03c; margin-bottom: 5px; cursor: pointer;}
+.l-image-control .icon16 {display: inline-block; vertical-align: top; margin-top: 3px;}
+.l-image-control input {display: inline-block; vertical-align: top; margin-top: 3px !important; margin-left: 3px !important;}
+.l-image-pic {box-sizing: border-box; margin-left: 4px !important; width: 200px;}
+#l-toolbar {padding-left: 20px; padding-top: 15px;}
+#l-toolbar a {cursor: pointer;}
+
+/* MASS ACTIONS */
+.mass-actions-wrap {display: inline-block; background: #0cb576; position: relative; font-size: 14px; padding: 0 10px; line-height: 32px; color: white; border-radius: 3px; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.07); cursor: pointer; z-index: 1;}
+.mass-actions-wrap.inactive {background: gray;}
+.mass-actions {position: absolute; padding: 0; margin: 0; list-style: none; background: #0cb576; left: 0; min-width: 100%; display: none;}
+.mass-actions li a {display: block; padding: 0px 10px; white-space: nowrap; color: white; text-decoration: none;}
+.mass-actions li a:hover {background: #0c9763; color: white !important;}
+.mass-actions-wrap:hover {border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;}
+.mass-actions-wrap.inactive:hover {border-radius: 3px;}
+.mass-actions-wrap:hover .mass-actions {display: block;}
+.mass-actions-wrap.inactive:hover .mass-actions {display: none;}
+.mass-actions-cpt i {width: 16px; height: 16px; margin-top: 7px; margin-left: 10px;}
+.mass-actions-cpt i:not(.loading) {filter: brightness(0) invert(1);}
+
+/* POPUP */
+.stf-popup {background: white; width: 730px; border-radius: 3px;}
+.stf-popup-cpt {padding: 10px; border-bottom: 1px solid lightgray;}
+.stf-popup-cpt .b-close {float: right; margin-top: 0px;}
+.stf-popup-cpt h3 {margin-bottom: 0;}
+.stf-popup-cnt {padding: 10px;}
+
+/* COMMON */
+.stf-highlight {font-weight: bold; color: black;}
+.stf-item-files-remove-dialog {margin: 5px 0;}
+
+/* SELECT2 */
+.stf-file-remove-dropdown ul:has(> .select2-no-results) {display: none !important;}
+
+/* TABLE REMOVE SET DIALOG  */
+.stf-sets-to-file-header {background: lightgray;}
+.stf-remove-dialog-message {margin: 10px 0;}
+
+/* SET EDIT TABLE GRID */
+.stf-set-block.edit-grid, .stf-set-product
+{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/*  */
+.dialog.persistent
+{
+    display: none;
+}

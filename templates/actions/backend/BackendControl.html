@@ -1,0 +1,194 @@
+<link rel="stylesheet" type="text/css" href="{$wa_app_static_url}plugins/stfile/css/control.css">
+<link rel="stylesheet" type="text/css" href="{$wa_app_static_url}plugins/stfile/css/datatables.css">
+<link rel="stylesheet" type="text/css" href="{$wa_app_static_url}plugins/stfile/css/select2.css">
+<script type="text/javascript" src="{$wa_app_static_url}plugins/stfile/js/fsend.js"></script>
+<script type="text/javascript" src="{$wa_app_static_url}plugins/stfile/js/fsortable.js"></script>
+<script type="text/javascript" src="{$wa_app_static_url}plugins/stfile/js/gofileupload.js"></script>
+<script type="text/javascript" src="{$wa_app_static_url}plugins/stfile/js/bpopup.js"></script>
+<script type="text/javascript" src="{$wa_app_static_url}plugins/stfile/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="{$wa_app_static_url}plugins/stfile/js/jquery.dataTables.reload.plugin.js"></script>
+<script type="text/javascript" src="{$wa_app_static_url}plugins/stfile/js/select2.js"></script>
+<script type="text/javascript" src="{$wa_app_static_url}plugins/stfile/js/select2_locale_ru.js"></script>
+
+<div class="sidebar stf-sidebar" style="width: 200px;">
+    <div class="block">
+        <ul class="menu-v with-icons">
+                <li class="bottom-padded">
+                    <a href="#/files//" >
+						<i class="icon16 folder"></i>Все файлы
+					</a>
+                </li>
+
+				<li class="bottom-padded">
+                    <a href="#/set/create/" >
+						<i class="icon16 add"></i>Новый список
+					</a>
+                </li>
+		</ul>
+		<h5 class="heading">Списки</h5>
+		<ul id="sortable" class="menu-v with-icons">
+			{foreach $sets as $key => $set}
+				<li id="{$key|escape}"  data-id={$key|escape}>
+					<a href="#/set/edit/id={$key|escape}">
+						<i class="icon16 sort"></i>
+						<span>{$set.name|escape}</span>
+					</a>
+				</li>	
+			{/foreach}
+		</ul>
+		<!-- <div class="test" data-data="{$sets['set']}"></div> -->
+	</div>
+</div>
+<div class="content left250px">
+	<div class="block double-padded stf-ajax"><i class="icon16 loading"></i></div>
+</div>
+
+{literal}
+<script type="text/javascript">
+(function($) {
+	$.stfileControl = {
+		ajaxContent: null,
+		pevHash: null,
+		ajaxRequest: null,
+		menu: null,
+		setMenu: null,
+		popup: null,
+
+		init: function() {
+			var self = this;
+			this.ajaxContent = $('.stf-ajax');
+			this.menu = $('.stf-sidebar');
+			this.pevHash = ['#', '', ''];
+			this.setMenu = $("#sortable");
+			this.popup = $('.stf-popup');
+			$(window).on('hashchange', function() {
+				self.dispatch();
+			});
+			self.dispatch();
+			
+			
+			this.setMenu.sortable({
+				update: function() {
+					self.updateSort();
+				}
+			}).disableSelection();
+			
+
+		},
+
+		updateSet: function(item) {
+			var self = this;
+			var target = this.setMenu.find(`li[data-id=${item.id}]`);
+			if(target.length) {
+				target.find('span').text(item.name);
+			} else {
+				this.setMenu.append(`\
+					<li data-id=${self.escapeHtml(item.id)}>\
+						<a href="#/set/edit/id=${self.escapeHtml(item.id)}">\
+							<i class="icon16 sort"></i>\
+							<span>${self.escapeHtml(item.name)}</span>\
+						</a>\
+					</li>\
+				`);
+			}
+        },
+		
+		updateSort: function() {
+			const sets =`sets= ${$('#sortable').sortable("toArray").join(',')}`;
+			console.log(sets)
+			$.ajax({
+				method: 'post',
+				url: '?plugin=stfile&module=set&action=updateSort',
+				data: sets,
+				success: function(jData) {
+					console.log(jData);
+				}
+			}, 'json')
+		},
+		
+
+		removeSet: function(item_id) {
+			var self = this;
+			var data = {
+				'id': item_id
+			}
+
+			$.post('?plugin=stfile&module=set&action=Remove', data, (jData) => {
+				
+				if(jData.data.result == 1)
+				{
+					
+					var target = this.setMenu.find(`li[data-id=${jData.data.id}]`);
+					
+					let replace_url = window.location.href.split('#')[0] + '#/files//';
+					window.location.replace(replace_url);
+					target.remove();
+					self.updateSort();
+				}
+			}, 'json');
+		},
+
+		dispatch: function(force) {
+			var self = this;
+			var hash = window.location.hash.replace('#', '').split('/');
+			if(hash.length < 3) {hash = ['#', 'files', '', ''];}
+			if(!hash[3]) {hash[3] = '';}
+
+			let prev = this.pevHash;
+			this.pevHash = [hash[0], hash[1], hash[2], hash[3]] /// this.pevHash = [...hash]
+			if(hash[0] == prev[0] && hash[1] == prev[1] && hash[2] == prev[2] && hash[3] == prev[3] && !force) {return;}
+			if(self.ajaxRequest !== null) {self.ajaxRequest.abort();}
+			let url = `?plugin=stfile&module=${encodeURIComponent(hash[1])}`;
+			if(hash[2].length) {url = url + '&action='+encodeURIComponent(hash[2]);}
+			
+			self.ajaxRequest = $.ajax({
+				method: 'post',
+				url: url,
+				data: hash[3],
+				cache: false,
+				xhr: function() {
+					var xhr = new window.XMLHttpRequest();
+					xhr.addEventListener("progress", function(e) {
+						if(e.lengthComputable) {  
+							var p = e.loaded / e.total / 100 * 90;
+						}
+					}, false);
+					return xhr;
+				},
+				success: function(jData) {
+					self.ajaxContent.html(jData);
+				}
+			})
+			
+		},
+		hidePopup: function() {
+			this.popup.bPopup().close();
+		},
+		deployPopup: function(url, data) {
+			var self = this;
+			$.post(url, data, function(html) {
+				self.popup.html(html).bPopup({
+					speed: 300,
+					transition: 'slideDown'
+				});
+			});
+		},
+		setActiveBlock: function(url) {
+			this.menu.find('li').removeClass('selected');
+			this.menu.find(`a[href='${url}']`).parent().addClass('selected');
+		},
+		escapeHtml: function(string) {
+			
+            return $("<div />").text(string).html();
+        },
+		isValidFilename: function(filename) {
+            return /^[^/?*.:;{}\\]+$/.test(filename);
+        }
+	}
+})(jQuery);
+$(document).ready(function() {
+	$.stfileControl.init();
+})
+
+</script>
+{/literal}

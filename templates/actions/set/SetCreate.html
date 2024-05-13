@@ -1,0 +1,40 @@
+<h1>Новый список</h1>
+<form  class="stf-set-create-form" action="?plugin=stfile&module=set&action=createConfirm">
+    <div class="field">
+        <div class="name">Имя</div>
+        <div class="value">
+            <input type="text" name="set[name]" value="">
+        </div>
+    </div>
+    <div class="field">
+        <input type="submit" value="сохранить" class="button green">
+        <span class="form-message" style="display: none;"></span>
+    </div>
+</form>
+
+{literal}
+<script type="text/javascript">
+    (function($) {
+        $.stfileSetCreate = {
+            form: null,
+            init: function() {
+                this.form = $('.stf-set-create-form');
+                const self = this;
+
+                $.stfileControl.setActiveBlock("#/set/Create/");
+
+                this.form.fSend(function(jData) {
+                    return;
+                })
+            },
+
+           
+        }
+        
+    })(jQuery);
+    $(document).ready(function() {
+        $.stfileSetCreate.init();
+    })
+
+</script>
+{/literal}

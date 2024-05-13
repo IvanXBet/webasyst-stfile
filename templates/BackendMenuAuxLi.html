@@ -1,0 +1,14 @@
+<div class="stf-popup" style="display: none">
+
+</div>
+{literal}
+<script>
+    (function($) {
+        $.stfileHelper = {
+            isValidFilename: function(filename) {
+                return /^[^/?*.:;{}\\]+$/.test(filename);
+            }   
+        }
+    })(jQuery);
+</script>
+{/literal}

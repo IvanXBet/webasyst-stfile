@@ -1,0 +1,96 @@
+{if isset($file)}
+<div class="stf-popup-cpt">
+	<i class="icon16 close b-close"></i>
+	<h3 class="title">Изменение файла: {$file.name|escape}.{$file.ext|escape}</h3>
+</div>
+
+<div class="stf-popup-cnt">
+    <div class="stf-edit-block" data-block="rename">
+        <form class="stf-files-edit-form" data-isset='{$set_id|escape}' action="?plugin=stfile&module=files&action=edit">
+            <input type="text" name="file[id]" value="{$file['id']|escape}" style="display: none;">
+            <input type="text" name="file[ext]" value="{$file['ext']|escape}" style="display: none;">
+    
+            <div class="field">
+                <div class="name">Новое имя</div>
+                <div class="value">
+                    <input type="text" name="file[name]" value="{$file['name']|escape}"/>
+                </div>
+            </div>
+    
+            <div>
+                <input type="submit" class="button green" value="Изменить">
+                <span class="form-message mt15" style="display: block;"></span>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+
+{else}
+<div class="stf-popup-cpt">
+    <i class="icon16 close b-close"></i>
+    <h2 class="title">Ошибка сервера</h2>
+</div>
+{/if}
+{literal}
+<script type="text/javascript">
+(function ($) {
+	$.stfileFilesEditDialog = {
+        form: null,
+        menu: null,
+        block: null,
+        set_id: null,
+        
+		init: function() {
+            this.form = $('.stf-files-edit-form');
+            this.set_id = this.form.attr('data-isset');
+            this.menu = $('.stf-edit-menu');
+            this.block = $('.stf-edit-block');
+            
+            this.initForm();
+		},
+        
+		initForm: function() {
+			var self = this;
+
+			this.form.submit(function() {
+				var t = $(this);
+				var m = t.find('.form-message');
+                var filename = $("input[name='file[name]']").prop('value');
+
+				m.hide();
+				
+                if(!$.stfileControl.isValidFilename(filename))
+                {
+					m.css('color', 'red');
+                    m.text("Название файла не должно быть с расширением и" + 
+                           "содержить специальных символов: (\ / : * ? \" < > . |)").show();
+                    return false;
+                }
+
+				$.post(t.attr('action'), t.serialize(), function(jData) {
+					if(jData.data[0].result == '1')
+                    {
+                       
+                        $.stfileFiles.filesTable.fnReloadAjax();
+						$.stfileControl.hidePopup();
+                    }
+					else 
+                    {
+						m.css('color', 'red');
+                        m.text(jData.data.message).show();
+                    }
+
+				}, 'json');
+
+				return false;
+			});
+		},
+	}
+})(jQuery);
+$(document).ready(function() {
+    $.stfileFilesEditDialog.init();
+});
+</script>
+{/literal}

@@ -1,0 +1,67 @@
+<div class="stf-popup-cpt">
+	<i class="icon16 close b-close"></i>
+	<h3>Удалить файлы ({$file_count|escape}) из списков</h3>
+</div>
+<div class="stf-popup-cnt">
+	<form class="stf-files-set-remove-form" action="?plugin=stfile&module=files&action=setRemove">
+		<table class="stf-files-set-remove-table zebra" data-filters="{$file_filters|escape}">
+			<tbody>
+				{foreach $sets as $key => $set}
+					<tr class="set">
+						<td width="1"><input type="checkbox" name="sets[{$set.id|escape}]"></td>
+						<td class="name">{$set.name|escape}</td>
+					</tr>
+				{/foreach}
+			</tbody>
+		</table>
+		<div class="mt15">
+			<input type="submit" class="button green" value="Удалить">
+			<span class="form-message" style="display: none;"></span>
+		</div>
+	</form>
+</div>
+{literal}
+<script type="text/javascript">
+(function ($) {
+	$.stfilesFilesSetRemoveDialog = {
+		table: null,
+		form: null,
+		filters: null,
+		init: function() {
+			this.table = $('.stf-files-set-remove-table');
+			this.form = $('.stf-files-set-remove-form');
+			this.filters = this.table.attr('data-filters');
+			this.initForm();
+		},
+		initForm: function() {
+			var self = this;
+			this.form.submit(function() {
+				var t = $(this);
+				var url = t.attr('action');
+				var m = t.find('.form-message');
+				m.hide();
+
+				console.log(t.serialize());
+				
+				$.post(url, self.filters+'&'+t.serialize(), function(jData) {
+
+					console.log(jData);
+
+					if(jData.data.result == '1') {
+						m.css('color', 'green');
+					}
+					else {
+						m.css('color', 'red');
+					}
+					m.text(jData.data.message).show();
+				}, 'json');
+				return false;
+			});
+		}
+	}
+})(jQuery);
+$(document).ready(function() {
+    $.stfilesFilesSetRemoveDialog.init();
+});
+</script>
+{/literal}
