@@ -1,0 +1,12 @@
+<div>
+    <h2>Дополнительные материалы к продукту</h2>
+    <div class="stf-block product-info--wrapper">
+        {foreach $stfile_files as $key => $file}
+            <div>
+                <a target="blank" href="{$file.download_url|escape}">
+                    <h5  class="name">{$file['name']|escape}</h5>
+                </a>
+            </div>
+        {/foreach}
+    </div>
+</div>

@@ -10,7 +10,7 @@
 <script type="text/javascript" src="{$wa_app_static_url}plugins/stfile/js/select2.js"></script>
 <script type="text/javascript" src="{$wa_app_static_url}plugins/stfile/js/select2_locale_ru.js"></script>
 <div class="sidebar stf-sidebar" style="width: 200px;">
-    <div class="block">
+    <div>
 		<h5 class="heading">Списки</h5>
 		<table class="stf-files-set-table zebra mt15">
 			<tbody>
@@ -137,13 +137,11 @@
                 var self = this;
                 this.setTable.find(this.setCheck).each(function() {
                     $(this).on('change', function(e) {
-                        var checked;
+                        var checked = 0;
 
                         if($(this).prop('checked')) {
                             checked = 1;
-						} else {
-                            checked = 0;
-                        }
+						}
                         
                         $.post('?plugin=stfile&module=product&action=changeSets', {set_id: parseInt($(this).attr('data-setId')), product_id: self.product_id, checked: checked, }, function(jData) {
                             console.log(jData.data, '123')

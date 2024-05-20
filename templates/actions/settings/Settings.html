@@ -1,0 +1,84 @@
+<!-- <link rel="stylesheet" type="text/css" href="{$wa_app_static_url}plugins/stfile/css/settings.css"> -->
+<script type="text/javascript" src="{$wa_url}wa-content/js/codemirror/lib/codemirror.js"></script>
+<script type="text/javascript" src="{$wa_url}wa-content/js/codemirror/mode/xml/xml.js"></script>
+<script type="text/javascript" src="{$wa_url}wa-content/js/codemirror/mode/javascript/javascript.js"></script>
+<script type="text/javascript" src="{$wa_url}wa-content/js/codemirror/mode/css/css.js"></script>
+<script type="text/javascript" src="{$wa_url}wa-content/js/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<script type="text/javascript" src="{$wa_url}wa-content/js/ace/ace.js?{$wa->version(true)}"></script>
+<script type="text/javascript" src="{$wa_app_static_url}plugins/stfile/js/fsend.js"></script>
+<h1>Файлы для товаров</h1>
+<span class="hint">Настройте плагин в этом разделе</span>
+<form class="wa-form stfile-settings-form mt10" action="?module=settings&plugin=stfile&action=save">
+	<div class="field">
+		<div class="name">Режим вывода списка</div>
+		<div class="value">
+			<select name="settings[hook_mode]">
+				<option value="0">Статическая функция</option>
+				<option value="1"{if $settings.hook_mode == '1'} selected{/if}>Системный хук</option>
+			</select>
+			<br>
+			<span class="hint">Вы можете использовать системный хук или поставить статическую функцию</span>
+		</div>
+	</div>
+	<div class="field">
+		<div class="name">Шаблон списка файлов</div>
+		<div class="value">
+			<textarea name="files_template" class="stf-codemirror-source" data-type="text/html">{$files_template|escape}</textarea>
+            
+			<br>
+			<span class="hint">Если Вы ошиблись и ничего не работает, Вы можете <a class="stf-template-default" href="?module=settings&plugin=stfile&action=deleteCustomTemplate">откатить шаблон до изначального состояния</a></span>
+		</div>
+	</div>
+	<div class="field">
+		<input type="submit" class="button green" value="Сохранить">
+		<div class="form-message"></div>
+	</div>
+</form>
+<script type="text/javascript">
+(function($) {
+	$.stfile = {
+		settingsForm: null,
+		codemirrorSource: null,
+		codemirror: null,
+		defaultBtn: null,
+		init: function() {
+			this.settingsForm = $('.stfile-settings-form');
+			this.codemirrorSource = $('.stf-codemirror-source');
+			this.defaultBtn = $('.stf-template-default');
+			this.initForm();
+			this.initCodemirror();
+			this.initDefaultBtn();
+		},
+		initDefaultBtn: function() {
+			var self = this;
+			this.defaultBtn.click(function(e) {
+				e.preventDefault();
+				$.post(self.defaultBtn.attr('href'), function(jData) {
+					self.codemirror.setValue(jData.data.default_template);
+				});
+			});
+		},
+		initForm: function() {
+			this.settingsForm.fSend(function(jData) {
+				return;
+			});
+		},
+		initCodemirror: function() {
+			var self = this;
+			this.codemirror = CodeMirror.fromTextArea(this.codemirrorSource[0], {
+				mode: this.codemirrorSource.attr('data-type'),
+				tabMode: 'indent',
+				lineWrapping: true,
+				onChange: function(e) {
+					self.codemirrorSource.val(e.getValue());
+				}
+			});
+		}
+	}
+})(jQuery);
+$(document).ready(function() {
+	$.stfile.init();
+});
+</script>
+
+<!-- {literal}{if class_exists('shopStfilePlugin')}{shopStfilePlugin::frontendProductFiles($product.id)}{/if}{/literal} -->

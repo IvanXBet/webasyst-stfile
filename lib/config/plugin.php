@@ -7,7 +7,7 @@ return array
 		'vendor' => 995002,
 		'description' => 'Позволяет добавлять файлы к товарам',
 		'img' => 'img/files.svg',
-		//'shop_settings' => true,
+		'shop_settings' => true,
 		'handlers' => array
 						(
 							

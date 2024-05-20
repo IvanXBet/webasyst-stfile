@@ -54,6 +54,7 @@ class shopStfilePlugin  extends shopPlugin
 			'toolbar_organize_li' => $view->fetch(wa()->getAppPath(null, 'shop').'/plugins/stfile/templates/BackendProductsToolbarOrganizeLi.html')
 		);
 	}
+	
 
 
 	public function frontendProduct($product)
@@ -105,7 +106,15 @@ class shopStfilePlugin  extends shopPlugin
 		$view = wa()->getView();
 		$view->assign('stfile_files', $files);
 
-		return $view->fetch(wa()->getAppPath(null, 'shop').'/plugins/stfile/templates/FrontendProductBlock.html');
+		$template_path = wa()->getDataPath('plugins\stfile').'\CustomTemplates.html';
+        if(file_exists($template_path)) 
+        {
+			
+			return $view->fetch(wa()->getDataPath('plugins\stfile').'\CustomTemplates.html');
+        }
+		else {
+			return $view->fetch(wa()->getAppPath(null, 'shop').'/plugins/stfile/templates/DefaultTemplates.html');
+		}
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -375,7 +384,7 @@ class shopStfilePlugin  extends shopPlugin
 		return trim($pdf->author);
 	}
 
-	//Получение фильров для фалов
+	//Получение фильров для файлов
 	public function getFileFilters()
 	{
 		$file_model = new shopStfilePluginFileModel();
@@ -384,6 +393,8 @@ class shopStfilePlugin  extends shopPlugin
 			'exts' => $file_model->getUniqueExtensions(),
 		);
 	}
+
+
 
 
 	/////////////////////////////////////////////////////////////////////////////////////

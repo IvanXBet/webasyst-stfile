@@ -1,27 +1,32 @@
-<li class="stf-action">
-	<ul class="menu-v stf-sets">
-		{foreach $stf_sets as $set}
-			<li>
-				<a href="#" class="stf-set" data-status="1" data-setId="{$set.id|escape}">
-					<i class="icon16 status-blue"></i> {$set.name|escape}
-				</a>
-			</li>
-		{/foreach}
+<div class="block stf-sidebar-action">
+	<h6 class="heading">Списки файлов</h6>
+	<ul class="menu-v with-icons">
+		<li class="stf-action">
+			<ul class="menu-v stf-sets">
+				{foreach $stf_sets as $set}
+					<li>
+						<a href="#" class="stf-set" data-status="1" data-setId="{$set.id|escape}">
+							<i class="icon16 status-blue"></i> {$set.name|escape}
+						</a>
+					</li>
+				{/foreach}
+			</ul>
+			<a class="stf-link"><i class="icon16 status-green"></i> Добавить </a>
+		</li>
+		<li class="stf-action">
+			<ul class="menu-v stf-sets">
+				{foreach $stf_sets as $set}
+					<li>
+						<a href="#" class="stf-set" data-status="0" data-setId="{$set.id|escape}">
+								<i class="icon16 status-blue"></i> {$set.name|escape}
+						</a>
+					</li>
+				{/foreach}
+			</ul>
+			<a class="stf-link"><i class="icon16 status-red"></i> Убрать </a>
+		</li>
 	</ul>
-	<a class="stf-link"><i class="icon16 status-green"></i> Добавить </a>
-</li>
-<li class="stf-action">
-	<ul class="menu-v stf-sets">
-		{foreach $stf_sets as $set}
-			<li>
-				<a href="#" class="stf-set" data-status="0" data-setId="{$set.id|escape}">
-						<i class="icon16 status-blue"></i> {$set.name|escape}
-				</a>
-			</li>
-		{/foreach}
-	</ul>
-	<a class="stf-link"><i class="icon16 status-red"></i> Убрать </a>
-</li>
+</div>
 
 {literal}
 <style type="text/css">
@@ -32,26 +37,21 @@
 	.stf-link {position: relative; z-index: 1;}
 	.stf-action:hover .stf-link {background: #efefef;}
 	.stf-set i {border-radius: 50%;}
-	.stbadges-product-badges {display: block; height: 5px;}
-	.stbadges-product-badge {width: 10px; height: 5px; display: block; margin: 0 3px 0 0; float: left; border-radius: 3px;}
-	.product .s-image-corner {display: none;}
 </style>
 <script type="text/javascript">
 (function($) {
-	$.shop.stbadges = {
+	$.stfileProductsMenu = {
 		items: null,
 		menu: null,
 		sets: null,
+
 		init: function() {
 			this.items = $('.stf-action');
-			this.menu = $('li[data-action="delete-badge"]').closest('.menu-v');
+			this.menu = $('.stf-sidebar-action');
 			this.sets = $('.stf-set');
 			var self = this;
 			
-			// this.menu.html('');
-			// this.items.each(function() {
-			// 	$(this).detach().appendTo(self.menu);
-			// });
+			this.menu.detach().prependTo('#s-product-list-toolbar');
 			
 			this.sets.click(function() {
 				var t = $(this);
@@ -66,11 +66,13 @@
 				
 				var params = $.product_list.getSelectedProducts(true);
 				p = self.preparePostParams(params);
+
 				if(p == null) {
 					alert('Выберите хотя бы один товар');
 					i.removeClass('loading');
 					return false;
 				}
+
 				$.post('?plugin=stfile&module=products&action=toggleSet', {ids_product: p, status: status, set_id: setId}, function(jData) {
 					console.log(jData);
 					i.removeClass('loading');
@@ -78,14 +80,12 @@
 				return false;
 			});
 		},
+
 		preparePostParams: function(params, status) {
 			var hash = '';
 			var products = new Array();
 			var product_count = 0;
 			$.each(params.serialized, function(index, param) {
-				// if(param.name == 'hash') {
-				// 	hash = param.value;
-				// }
 				if(param.name == 'product_id[]') {
 					products.push(param.value);
 					product_count = product_count+1;
@@ -107,7 +107,7 @@
 	}
 })(jQuery)
 $(document).ready(function() {
-	$.shop.stbadges.init();
+	$.stfileProductsMenu.init();
 });
 </script>
 {/literal}
